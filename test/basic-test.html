@@ -1,0 +1,93 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../image-window.html">
+  </head>
+  <body>
+
+    <!-- You can use the document as a place to set up your fixtures. -->
+    
+    <test-fixture id="image-window-fixture">
+      <template>
+        <image-window style="width: 256px; height: 192px;" src="../demo/lenna.png"> </image-window>
+      </template>
+    </test-fixture>
+    <script>
+      
+      suite('<image-window>', function() {
+        var img;
+
+        setup(function() {
+          img = fixture('image-window-fixture');
+        }); 
+
+        test('default alignment is to the top left corner', function(done) {
+          img.addEventListener('image-ready', function(event) {
+            assert.equal(img.top, 0);
+            assert.equal(img.left, 0);
+            done();
+          });
+        });
+        
+        test('By default, image is not resized', function(done) {
+          img.addEventListener('image-ready', function(event) {
+            assert.equal(img.newWidth, 512);
+            assert.equal(img.newHeight, 512);
+            done();
+          });
+        });
+
+        test("'fit' resize works as expected", function(done) {
+          checkFit(done,'fit',192,192);
+        }); 
+        
+        test('"fitx" resize works as expected', function(done) {
+          checkFit(done,'fitx',256,256);
+        }); 
+
+        test('"fity" resize works as expected', function(done) {
+          checkFit(done,'fity',192,192);
+        }); 
+        
+        test('"crop" resize works as expected', function(done) {
+          checkFit(done,'crop',256,256);
+        }); 
+        
+        test('"fill" resize works as expected', function(done) {
+          checkFit(done,'fill',256,192);
+        }); 
+        test('"none" resize works as expected', function(done) {
+          checkFit(done,'none',512,512);
+        }); 
+
+        function checkFit(done, fit, w,h) {
+          img.addEventListener('image-ready', function(event) {
+            img.fit = fit;
+            assert.equal(img.newWidth, w);
+            assert.equal(img.newHeight, h);
+            done();
+          });
+
+        }
+
+      });
+    </script>
+
+  </body>
+</html>
