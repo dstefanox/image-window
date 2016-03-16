@@ -76,6 +76,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           checkFit(done,'none',512,512);
         }); 
 
+        test('changing image src to show other image', function(done) {
+          img.src = "../demo/plant.jpg";
+          img.addEventListener('image-ready', function(event) {
+            assert.equal(img.newWidth, 368);
+            assert.equal(img.newHeight, 368);
+            done();
+          }); 
+        });
+
+
         function checkFit(done, fit, w,h) {
           img.addEventListener('image-ready', function(event) {
             img.fit = fit;
