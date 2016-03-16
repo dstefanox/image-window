@@ -64,6 +64,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <input type="radio" name="fit" value="fill" onclick="setFit(this);"> Fill<br>    
           <input type="radio" name="fit" value="none" onclick="setFit(this);"> None<br>    
         </div>
+
+        <div class="radiobox">
+        <h3>Image selection</h3>
+          <select id="imgsel" onchange="setImage(this);">
+            <option value="lenna.png">Lenna</option>
+            <option value="plant.jpg">Plant</option>
+          </select>
+        </div>
+
       </div>
     </div>  
 
@@ -95,20 +104,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },2000);
       });
       
-
+      function setImage(target) {
+        document.querySelector("#demoimg").src = target.options[target.selectedIndex].value;
+      }
 
       function setHalign(target) {
-        console.log(target.value);
         document.querySelector("#demoimg").halign = target.value;
       }
       
       function setValign(target) {
-        console.log(target.value);
         document.querySelector("#demoimg").valign = target.value;
       }
 
       function setFit(target) {
-        console.log(target.value);
         document.querySelector("#demoimg").fit = target.value;
       }
 
