@@ -11,6 +11,10 @@ Component allows resizing of the image in a various ways depending on a window s
 For example, image can be scaled to fully fit into the window and to be centered on both axis.
 Alignment and scaling can be changed dynamically and change from one state to another is animated.
 
+## Live demo
+
+To see live demo of the `image-window` element, visit element [demo page](http://dstefanox.github.io/image-window/components/image-window/)
+
 ## Installing
 
 Install the component using [Bower](http://bower.io/):
