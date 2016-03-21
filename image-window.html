@@ -30,6 +30,10 @@ Window may be defined by specifying `width` and height attributes of the compone
     
     <image-window style='width:264px;height:264px;' src='test-image.jpg'></image-window>
 
+The way in which image is resized relative to the window is defined using `fit` property of the `image-window`. Of course, size of the 'image-window' should be defined in order to make fit work as expected. In example below, image is resized to fit width of the window.
+
+    <image-window style='width:264px;height:264px;' src='test-image.jpg' fit='fitx'></image-window>
+
 @demo
 -->
 <dom-module id="image-window">

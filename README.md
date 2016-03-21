@@ -13,9 +13,22 @@ Alignment and scaling can be changed dynamically and change from one state to an
 
 ## Installing
 
-tbd.
+Install the component using [Bower](http://bower.io/):
+
+```sh
+$ bower install image-window --save
+```
 
 ## Usage
+
+### Import  Element:
+
+```html
+<link rel="import" href="bower_components/image-window/image-window.html">
+```
+
+### Place it on page:
+
 
 Basic use case is practically the same as in case of `img` or `iron-image`. This shows image in its original size:
 
@@ -25,3 +38,7 @@ Basic use case is practically the same as in case of `img` or `iron-image`. This
 Window may be defined by specifying `width` and `height` attributes of the component. Following will show :
 
     <image-window style='width:264px;height:264px;' src='test-image.jpg'></image-window>
+
+The way in which image is resized relative to the window is defined using `fit` property of the `image-window`. Of course, size of the 'image-window' should be defined in order to make fit work as expected. In example below, image is resized to fit width of the window.
+
+  	<image-window style='width:264px;height:264px;' src='test-image.jpg' fit='fitx'></image-window>
