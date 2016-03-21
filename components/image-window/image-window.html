@@ -1,0 +1,338 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`image-window` is aimed to be an alternative to `img` tag or `iron-image component`, allowing better control over image.
+As its name says, concept of the component is to represent an image seen through the window. 
+Window is an rectangular transparent area in non-transparent surface, where image is placed behind this surface.
+Part of the image which is direcly below window is visible, while part of the image which is below non-transparent area is invisible.
+Component allows us to resize image in a various ways depending on window size, as well as to position resized image relative to window in a various ways.
+For example, image can be scaled to fully fit into the window and to be centered on both axis.
+Alignment and scaling can be changed dynamically and change from one state to another is animated.
+
+
+Examples:
+
+Basic use case is practically the same as in case of `img` or `iron-image`. This shows image in its original size:
+    
+    <image-window src='test-image.jpg'></image-window>
+
+
+Window may be defined by specifying `width` and height attributes of the component. Following will show :
+    
+    <image-window style='width:264px;height:264px;' src='test-image.jpg'></image-window>
+
+The way in which image is resized relative to the window is defined using `fit` property of the `image-window`. Of course, size of the 'image-window' should be defined in order to make fit work as expected. In example below, image is resized to fit width of the window.
+
+    <image-window style='width:264px;height:264px;' src='test-image.jpg' fit='fitx'></image-window>
+
+@demo
+-->
+<dom-module id="image-window">
+
+  <template>
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      overflow: hidden;
+      -webkit-transition: 0.2s ease-in-out;
+      -moz-transition: 0.2s ease-in-out;
+      -o-transition: 0.2s ease-in-out;
+      transition: 0.2s ease-in-out;
+      
+      border: 1px solid blue;
+    }
+
+    #img {
+      position: relative;
+      visibility: hidden;
+      -webkit-transition: 0.2s ease-in-out;
+      -moz-transition: 0.2s ease-in-out;
+      -o-transition: 0.2s ease-in-out;
+      transition: 0.52 ease-in-out;
+    }
+  </style>
+
+    <img id="img" src="{{src}}">
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'image-window',
+
+    properties: {
+
+      /**
+       * `src` is the path to the image to show within window.
+       */
+      src: {
+        type: String,
+        observer:'_srcChanged'
+      },
+      /**
+       * `top` allows user to set vertical offset of the image against top left corner of the window.
+       */
+      top: {
+        type:Number,
+        value:0,
+        observer:'_topChanged'
+      },
+      /**
+       * `left` allows user to set horizontal offset of the image against top left corner of the window.
+       */
+      left: {
+        type:Number,
+        value:0,
+        observer:'_leftChanged'
+      }, 
+      /**
+       * `fit` defines way in which image is resized to match window size.<br>
+       * Following values are possible for fit option:<br>
+       <ul>
+       <li>`fit` - Resize image proportionaly so that both dimensions fit in window</li>
+       <li>`fitx` - Resize image to fill width of the window. Height of the image is scaled for a same amount, which may cause it to be cropped. </li>
+       <li>`fity` - Resize image to fill height of the window. Width of the image is scaled for a same amount, which may cause it to be cropped. </li>
+       <li>`crop` - Resize image proportionaly so that its smaller dimension fits into the window, while other still can't, so it will be cropped.</li>
+       <li>`fill` - Sets image dimensions so that they match corresponding window dimensions</li>
+       <li>`none` - Image keeps its original size.</li>
+       </ul>
+       */
+      fit: {
+        type:String,
+        value:"none",
+        notify:true,
+        observer:'_fitChanged'
+      }, 
+      /**
+        * `halign` defines horizontal alignment of the image within window.<br>
+        * Following values are possible:
+        <ul>
+        <li>left</li> Image is aligned to the left edge of the window.
+        <li>right</li> Image is aligned to the right edge of the window.
+        <li>center</li> Image is centered horizontally within the window.
+        <li>none</li> No alignment is done. 
+        </ul>
+      */
+      halign: {
+        type:String,
+        value:"left",
+        notify:true,
+        observer:'_halignChanged'
+      }, 
+      /**
+        * `valign` defines vertical alignment of the image within window.<br>
+        * Following values are possible:
+        <ul>
+        <li>`top` - Image is aligned to the top of the window.</li>
+        <li>`middle` - Image is centered vertically within the window.</li>
+        <li>`bottom` - Image is aligned to the bottom of the window.</li>  
+        <li>`none` - No automatic alignment is done.</li>  
+        </ul>
+      */
+      valign: {
+        type:String,
+        value:"top",
+        notify:true,
+        observer:'_valignChanged'
+      },
+      /**
+       * `maxUpscale` Allows to limit how many times image can be scalled-up if it is smaller than window.
+       */
+      maxUpscale: {
+        type:Number,
+        value:2,
+        notify:true
+      }
+
+    },
+
+    // Element Lifecycle
+    ready: function() {
+      this.$.img.onload = this._imageLoaded.bind(this);
+    },
+
+    _imageLoaded:function() {
+      this.origWidth = this.$.img.naturalWidth;
+      this.origHeight = this.$.img.naturalHeight;
+      this._fitImage();
+      this._setHorizontalAlignment();
+      this._setVerticalAlignment();
+      // calculate alignment, resizing parameters
+      this.$.img.style.visibility = "visible";
+      this.fire('image-ready', {newWidth:this.newWidth, newHeight:this.newHeight});
+    },
+
+    _fitImage:function() {
+      switch(this.fit) {
+        case 'fit':
+          this._imageFitProportional(this.origWidth, this.origHeight, this.getBoundingClientRect().width, this.getBoundingClientRect().height);
+        break;
+        case 'fitx':
+          this._imageFitOneDimension(this.origWidth, this.getBoundingClientRect().width);
+        break;
+        case 'fity':
+          this._imageFitOneDimension(this.origHeight, this.getBoundingClientRect().height);
+        break;
+        case 'crop':
+          this._imageCropFit(this.origWidth, this.origHeight, this.getBoundingClientRect().width, this.getBoundingClientRect().height);
+        break;
+        case 'fill':
+          this._imageSetDimension(this.getBoundingClientRect().width, this.getBoundingClientRect().height);
+        break;
+        case 'none':
+          this._imageSetDimension(this.origWidth, this.origHeight);
+        break;
+        default:
+
+        break;
+      }
+
+    },
+    _limitRatio:function(ratio) {
+      var minUpscale = 1.0/this.maxUpscale;
+      if (ratio < minUpscale) {
+        return minUpscale;
+      }
+      return ratio;
+    },
+    _fitChanged:function(oldVal, newVal) {
+      this._fitImage();
+      this._setHorizontalAlignment();
+      this._setVerticalAlignment();
+    },
+    _imageSetDimension:function(winW, winH) {
+      this.$.img.style.width=winW+"px";
+      this.$.img.style.height=winH+"px";
+      this.newWidth = winW;
+      this.newHeight = winH;
+    },
+    _imageFitOneDimension:function(original, required) {
+      var ratio = original/required;
+      ratio = this._limitRatio(ratio);
+      this._scaleImage(this.origWidth, this.origHeight, ratio);
+    },
+    /**
+     * Resize image so that it's both dimensions fit into the specified dimensions. 
+     * @param imW Image width
+     * @param imH Imahge height
+     * @param winW Window width
+     * @param winH Window height
+     */
+    _imageFitProportional:function(imW, imH, winW, winH) {
+      if (!imW) {
+        return;
+      }
+      var ratioW = ratio = imW / winW;
+      var ratioH = imH / winH;
+      if (ratioH > ratioW) {
+        ratio = ratioH;
+      }
+      ratio = this._limitRatio(ratio);
+      this._scaleImage(imW, imH, ratio);
+    },
+    /**
+     * Crop-fit image into the window. Resize it so that one dimension fits (that requires less resizing). 
+     * @param imW Image width
+     * @param imH Imahge height
+     * @param winW Window width
+     * @param winH Window height
+     */
+    _imageCropFit: function(imW, imH, winW, winH) {
+      var ratioW = ratio = imW / winW;
+      var ratioH = imH / winH;
+      var minUpscale = 1.0/this.maxUpscale;
+      if (ratioH < ratioW) {
+        ratio = ratioH;
+      }
+      if (ratio < minUpscale) {
+        ratio = minUpscale;
+      }
+      this._scaleImage(imW, imH, ratio);
+    },
+
+    
+    _scaleImage: function(imW, imH, ratio) {
+      resizedW = Math.ceil(imW/ratio);
+      resizedH = Math.ceil(imH/ratio);
+      this._imageSetDimension(resizedW, resizedH);
+    },
+
+    _halignChanged:function(oldVal, newVal) {
+      this._setHorizontalAlignment();
+    },
+    _valignChanged:function(oldVal, newVal) {
+      this._setVerticalAlignment();
+    },
+
+    _setHorizontalAlignment : function() {
+      var w = this.newWidth;
+      if (this.fit==='none') {
+        w = this.origWidth;
+      }
+      if (this.halign === 'center') {
+        var x = (w - this.getBoundingClientRect().width)/2;
+        this.$.img.style.left = (-1*x)+"px";
+      } else if (this.halign === 'right') {
+        var x = (w - this.getBoundingClientRect().width);
+        this.$.img.style.left = (-1*x)+"px";
+      } else if (this.halign === 'left' || this.halign === 'none') {
+        this.$.img.style.left = "0";
+      }      
+    },
+    _setVerticalAlignment : function() {
+      var h = this.newHeight;
+      if (this.fit==='none') {
+        h = this.origHeight;        
+      }
+      if (this.valign === 'middle') {
+        var y = (h - this.getBoundingClientRect().height)/2;
+        this.$.img.style.top = (-1*y)+"px";
+      } else if (this.valign === 'bottom') {
+        var y = (h - this.getBoundingClientRect().height);
+        this.$.img.style.top = (-1*y)+"px";
+      } else if (this.valign === 'top' || this.valign === 'none') {        
+        this.$.img.style.top = "0";
+      }      
+    },
+
+    // Element Behavior
+
+    /**
+     * The `image-ready` event is fired after image is loaded and scaled.
+     *
+     * @event image-ready
+     * @detail {{newWidth: Integer, newHeight:Integer}}
+     */
+    
+    _srcChanged:function(newSrc, oldSrc) {
+      // Do nothing if no change
+      if (newSrc === oldSrc) {
+        return;
+      }
+    },
+    
+    _topChanged:function(newVal, oldVal) {
+      this.$.img.style.top = "-"+newVal+"px";
+    },
+    
+    _leftChanged:function(newVal, oldVal) {
+      this.$.img.style.left = "-"+newVal+"px";
+    },
+
+
+  });
+
+</script>

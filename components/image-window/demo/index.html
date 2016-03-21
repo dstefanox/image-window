@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>image-window Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../image-window.html">
+    <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+    <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
+    <style type="text/css">
+    .radiobox {
+      border:1px solid #dedede;
+      padding: 16px;
+    }
+    </style>
+
+  </head>
+  <body unresolved>
+    <div class="vertical center layout">
+      <p><code>&lt;image-window&gt;</code> demo</p>
+
+      <div id="demo-msg">
+        Lenna is loading...
+      </div>
+      <image-window id="demo1" style="width: 320px; height: 240px;" src='lenna.png'>
+      </image-window>      
+
+      <br><br>
+      <image-window style="width: 320px; height: 240px;" id="demoimg" src='plant.jpg' fit='fit'>
+      </image-window>
+      
+      <div class="horizontal layout">
+        <div class="radiobox">
+        <h3>Horizontal alignment</h3>
+          <input type="radio" name="halign" value="left" onclick="setHalign(this);" checked> Left<br>
+          <input type="radio" name="halign" value="center" onclick="setHalign(this);"> Center<br>
+          <input type="radio" name="halign" value="right" onclick="setHalign(this);"> Right<br>    
+          <input type="radio" name="halign" value="none" onclick="setHalign(this);"> None    
+        </div>
+
+        <div class="radiobox">
+        <h3>Vertical alignment</h3>
+          <input type="radio" name="valign" value="top" onclick="setValign(this);" checked> Top<br>
+          <input type="radio" name="valign" value="middle" onclick="setValign(this);"> Middle<br>
+          <input type="radio" name="valign" value="bottom" onclick="setValign(this);"> Bottom<br>
+          <input type="radio" name="valign" value="none" onclick="setValign(this);"> None    
+        </div>
+        <div class="radiobox">
+        <h3>Image resizing</h3>
+          <input type="radio" name="fit" value="fit" onclick="setFit(this);" checked> Fit<br>
+          <input type="radio" name="fit" value="fitx" onclick="setFit(this);"> FitX<br>
+          <input type="radio" name="fit" value="fity" onclick="setFit(this);"> FitY<br>
+          <input type="radio" name="fit" value="crop" onclick="setFit(this);"> Crop<br>
+          <input type="radio" name="fit" value="fill" onclick="setFit(this);"> Fill<br>    
+          <input type="radio" name="fit" value="none" onclick="setFit(this);"> None<br>    
+        </div>
+
+        <div class="radiobox">
+        <h3>Image selection</h3>
+          <select id="imgsel" onchange="setImage(this);">
+            <option value="lenna.png">Lenna</option>
+            <option selected value="plant.jpg">Tomato plant</option>
+          </select>
+        </div>
+
+      </div>
+    </div>  
+
+
+    <script>
+      var settings = [
+        {f:"none", h:"left", v:"top", c:"No special alignment or fitting is performed"},
+        {f:"none", h:"center", v:"middle", c:"No fitting yet, but image is center within the window"},
+        {f:"crop", h:"center", v:"middle", c:"Now, crop-fit and center within the window"},
+        {f:"fit", h:"center", v:"middle", c:"Now, fit both dimensions and center within the window"},
+        {f:"fit", h:"left", v:"middle", c:"Alignment can be changed also when image is fitted"},
+        {f:"fit", h:"right", v:"middle", c:"Fit both dimensions and align right"},
+        {f:"fill", h:"right", v:"middle", c:"Fitting both dimensions deforms image."},
+        {f:"none", h:"right", v:"bottom", c:"No fitting, but some bottom-right aligned"},
+      ];
+      var cnt = 0;
+      var img = document.querySelector('#demo1');
+      var msg = document.querySelector('#demo-msg');
+      // Once image is loaded, cycle through some of possible alignment/scalling combinations.
+      img.addEventListener('image-ready', function() {
+        setInterval(function() {
+          var setup = settings[cnt++];
+          cnt = (cnt >= settings.length) ? 0:cnt;
+          
+          img.fit = setup.f;
+          img.halign = setup.h;
+          img.valign = setup.v;
+          msg.innerHTML = setup.c;
+        },2000);
+      });
+      
+      function setImage(target) {
+        document.querySelector("#demoimg").src = target.options[target.selectedIndex].value;
+      }
+
+      function setHalign(target) {
+        document.querySelector("#demoimg").halign = target.value;
+      }
+      
+      function setValign(target) {
+        document.querySelector("#demoimg").valign = target.value;
+      }
+
+      function setFit(target) {
+        document.querySelector("#demoimg").fit = target.value;
+      }
+
+    </script>
+
+  </body>
+</html>
