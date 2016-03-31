@@ -77,23 +77,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }); 
 
         test('changing image src to show other image', function(done) {
+          var listener = function(event) {
+            console.log("loaded:",event.target.$.img.src);
+            if (event.target.$.img.src.indexOf("plant.jpg")!==-1) {
+              img.removeEventListener('image-ready', listener);
+              assert.equal(event.detail.newWidth, 368);
+              assert.equal(event.detail.newHeight, 368);
+              done();
+            }
+          }; 
+
           img.src = "../demo/plant.jpg";
-          img.addEventListener('image-ready', function(event) {
-            assert.equal(img.newWidth, 368);
-            assert.equal(img.newHeight, 368);
-            done();
-          }); 
+          img.addEventListener('image-ready', listener);
         });
 
 
         function checkFit(done, fit, w,h) {
-          img.addEventListener('image-ready', function(event) {
-            img.fit = fit;
+          var listener = function(event) {
+            img.removeEventListener('image-ready', listener);
             assert.equal(img.newWidth, w);
             assert.equal(img.newHeight, h);
             done();
-          });
+          };
 
+          img.addEventListener('image-ready', listener);
+          img.fit = fit;
         }
 
       });
