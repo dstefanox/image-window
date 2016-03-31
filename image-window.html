@@ -172,6 +172,7 @@ The way in which image is resized relative to the window is defined using `fit` 
       this._setVerticalAlignment();
       // calculate alignment, resizing parameters
       this.$.img.style.visibility = "visible";
+      console.log("onload, w:",this.newWidth,",h:",this.newHeight);
       this.fire('image-ready', {newWidth:this.newWidth, newHeight:this.newHeight});
     },
 

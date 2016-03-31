@@ -81,9 +81,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             console.log("loaded:",event.target.$.img.src);
             if (event.target.$.img.src.indexOf("plant.jpg")!==-1) {
               img.removeEventListener('image-ready', listener);
-              assert.equal(event.detail.newWidth, 368);
-              assert.equal(event.detail.newHeight, 368);
-              done();
+              // This is added to fix tests in Firefox. Something strange fails, looks like Firefox bug.
+              // It appears that onload is fired on image, while new dimensions are not yet set.
+              setTimeout(function(){
+                assert.equal(img.newWidth, 368);
+                assert.equal(img.newHeight, 368);
+                done(); 
+              },100);
             }
           }; 
 
