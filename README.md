@@ -3,6 +3,8 @@
 `image-window` is aimed to be an alternative to `img` tag or `iron-image` component, allowing better control over image.
 As its name says, concept of the component is to represent an image seen through the window. 
 
+`image-window` is a hybrid component, so it can work with both polymer 1.x and 2.x.
+
 **Window** is an rectangular transparent area in infinite non-transparent surface, and image is placed behind this surface.
 Part of the image which is direcly below window is visible, while part of the image which is below non-transparent area is invisible.
 
